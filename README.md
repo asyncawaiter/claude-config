@@ -24,7 +24,7 @@ Skills are reusable prompt templates that extend Claude Code's capabilities. Ins
 
 | Skill | Description |
 |-------|-------------|
-| `config-sync` | Sync Claude Code configuration between local machine and remote GitHub repo. Compares skills, commands, hooks, and statusline, allowing selective sync in both directions. |
+| `config-sync` | Sync Claude Code configuration between local machine and remote GitHub repo. Compares skills, commands, hooks, plugins, and statusline, allowing selective sync in both directions. |
 | `continuous-learning` | Continuous learning system that extracts reusable knowledge from work sessions. Triggers on `/continuous-learning`, "save this as a skill", "what did we learn?", or after non-obvious debugging tasks. |
 | `effective-writing-llms` | Write effectively in the age of LLMs, avoiding common machine-generated patterns while leveraging AI as a writing tool. Use for documentation, reports, and analyses. |
 | `humanizer` | Remove signs of AI-generated writing from text. Detects and fixes patterns including inflated symbolism, promotional language, em dash overuse, rule of three, AI vocabulary, and excessive conjunctive phrases. |
@@ -44,6 +44,20 @@ Event-driven scripts that run automatically. Install to `~/.claude/hooks/`.
 | Hook | Trigger | Description |
 |------|---------|-------------|
 | `continuous-learning-activator.sh` | UserPromptSubmit | Activates continuous learning evaluation after each prompt, ensuring valuable knowledge is captured and preserved. |
+
+### Plugins
+
+Recommended Claude Code plugins tracked by this configuration. Run `/config-sync` to see which plugins are missing on your machine.
+
+| Plugin | Description | Install Command |
+|--------|-------------|-----------------|
+| Frontend Design | Create distinctive, production-grade frontend interfaces with high design quality | `claude /install-plugin frontend-design@claude-plugins-official` |
+| GitHub | GitHub integration for working with issues, pull requests, and repositories | `claude /install-plugin github@claude-plugins-official` |
+| Vercel | Deploy applications to Vercel, view deployment logs, and manage project configuration | `claude /install-plugin vercel@claude-plugins-official` |
+| Supabase | Supabase integration for database operations, authentication, and backend services | `claude /install-plugin supabase@claude-plugins-official` |
+| Swift LSP | Swift language server protocol support for enhanced Swift/iOS development | `claude /install-plugin swift-lsp@claude-plugins-official` |
+| Stripe | Payment processing integration with error explanations, test cards, and best practices | `claude /install-plugin stripe@claude-plugins-official` |
+| Canvas | Interactive terminal canvases for calendars, documents, and flight booking interfaces | `claude /install-plugin canvas@claude-canvas` |
 
 ### Status Line
 
@@ -77,7 +91,8 @@ Use the `/config-sync` skill to interactively sync configurations:
 1. Install the config-sync skill manually (see Quick Start)
 2. Run `/config-sync` in Claude Code
 3. Select which features to install from remote
-4. Optionally push your local configurations to share
+4. Select which plugins to install (provides commands)
+5. Optionally push your local configurations to share
 
 ### Manual Installation
 
@@ -99,6 +114,9 @@ chmod +x ~/.claude/hooks/HOOK.sh
 # Status line
 cp .claude/statusline-command.sh ~/.claude/
 chmod +x ~/.claude/statusline-command.sh
+
+# Plugins (run in terminal)
+claude /install-plugin PLUGIN_ID
 ```
 
 ## Contributing
@@ -109,15 +127,16 @@ Run `/config-sync` and select "push to remote" to contribute your local configur
 
 ```
 .claude/
-├── commands/           # Slash command definitions (.md)
+├── commands/              # Slash command definitions (.md)
 │   └── shareable-doc.md
-├── hooks/              # Event-triggered scripts (.sh)
+├── hooks/                 # Event-triggered scripts (.sh)
 │   └── continuous-learning-activator.sh
-├── skills/             # Skill directories with SKILL.md
+├── skills/                # Skill directories with SKILL.md
 │   ├── config-sync/
 │   ├── continuous-learning/
 │   ├── effective-writing-llms/
 │   └── humanizer/
+├── plugins.json           # Plugin manifest with descriptions
 └── statusline-command.sh  # Custom status line script
 ```
 

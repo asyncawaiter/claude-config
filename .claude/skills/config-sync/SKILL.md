@@ -24,16 +24,34 @@ The following paths are compared and can be synced:
 
 | Type | Local Path | Remote Path |
 |------|------------|-------------|
-| Skills | `~/.claude/skills/` | `.claude/skills/` (if present) |
+| Skills | `~/.claude/skills/` | `.claude/skills/` |
 | Commands | `~/.claude/commands/` | `.claude/commands/` |
-| Hooks | `~/.claude/hooks/` | `.claude/hooks/` (if present) |
+| Hooks | `~/.claude/hooks/` | `.claude/hooks/` |
 | Statusline | `~/.claude/statusline-command.sh` | `.claude/statusline-command.sh` |
+| Plugins | `~/.claude/settings.json` (enabledPlugins) | `.claude/plugins.json` (manifest) |
 
 **Excluded from sync:**
-- `settings.json` (contains machine-specific plugin configs)
+- `settings.json` (contains machine-specific configs, but plugins are tracked separately)
 - `settings.local.json` (local overrides)
 - `history.jsonl`, `stats-cache.json` (ephemeral data)
 - `projects/`, `todos/`, `session-env/` (session data)
+
+## Plugin Manifest Format
+
+The plugin manifest (`plugins.json`) tracks recommended plugins with descriptions and installation instructions:
+
+```json
+{
+  "plugins": [
+    {
+      "id": "plugin-name@source",
+      "name": "Human Readable Name",
+      "description": "What this plugin does",
+      "install": "Run: claude /install-plugin plugin-name@source"
+    }
+  ]
+}
+```
 
 ## Workflow
 
@@ -81,7 +99,33 @@ Do the same for:
 
 Same comparison but reversed - items that exist locally but not in remote.
 
-### Step 3: Present Remote-Only Items to User
+### Step 3: Compare Plugins
+
+#### 3a: Read Remote Plugin Manifest
+
+Read the plugin manifest from the remote repo:
+
+```bash
+cat "$TEMP_DIR/.claude/plugins.json"
+```
+
+Parse the JSON to get the list of plugin IDs.
+
+#### 3b: Read Local Enabled Plugins
+
+Extract enabled plugins from local settings:
+
+```bash
+cat "$HOME/.claude/settings.json" | jq -r '.enabledPlugins | keys[]'
+```
+
+#### 3c: Find Missing Plugins
+
+Compare the two lists:
+- **Missing locally**: Plugins in remote manifest but not enabled in local settings
+- **Missing from manifest**: Plugins enabled locally but not in remote manifest
+
+### Step 4: Present Remote-Only Items to User
 
 If there are items in remote that don't exist locally, present them to the user.
 
@@ -101,6 +145,10 @@ Format the output clearly:
 
 ### Other
 - statusline-command.sh - Custom status line script
+
+### Plugins (not installed on this machine)
+- Frontend Design - Create distinctive frontend interfaces
+- Stripe - Payment processing integration
 ```
 
 Then use **AskUserQuestion** to let the user select which items to install:
@@ -111,7 +159,13 @@ Which items would you like to install from the remote repository?
 
 Options should include each available item, with multiSelect: true.
 
-### Step 4: Install Selected Items
+For plugins specifically, present them separately:
+
+```
+Which plugins would you like to install?
+```
+
+### Step 5: Install Selected Items
 
 For each selected item, copy from the temp directory to the appropriate local location:
 
@@ -129,9 +183,22 @@ For skills (which are directories), use recursive copy:
 cp -r "$TEMP_DIR/.claude/skills/some-skill" "$HOME/.claude/skills/"
 ```
 
+#### Installing Plugins
+
+For each selected plugin, provide the installation command:
+
+```
+To install the selected plugins, run these commands:
+
+claude /install-plugin frontend-design@claude-plugins-official
+claude /install-plugin stripe@claude-plugins-official
+```
+
+**Note:** Plugin installation requires running commands outside the current session. Provide the exact commands for the user to run.
+
 Report what was installed.
 
-### Step 5: Present Local-Only Items to User
+### Step 6: Present Local-Only Items to User
 
 If there are items locally that don't exist in remote, present them:
 
@@ -146,6 +213,9 @@ If there are items locally that don't exist in remote, present them:
 
 ### Hooks
 - my-hook.sh
+
+### Plugins (installed locally but not in manifest)
+- canvas@claude-canvas - Interactive terminal canvases
 ```
 
 Then use **AskUserQuestion**:
@@ -158,13 +228,35 @@ Options:
 - "Yes, let me select which ones"
 - "No, skip pushing"
 
-### Step 6: Push Selected Items to Remote
+### Step 7: Push Selected Items to Remote
 
 If user wants to push:
 
 1. Ask which items to push (multiSelect)
 2. Copy selected items to the temp repo directory
-3. Commit and push:
+3. **For plugins**: Update the plugins.json manifest with new entries
+
+#### Updating Plugin Manifest
+
+When adding a new plugin to the manifest:
+
+1. Read the existing plugins.json
+2. Add a new entry with:
+   - `id`: The plugin ID (e.g., `canvas@claude-canvas`)
+   - `name`: Human-readable name (derive from ID or ask user)
+   - `description`: Brief description (ask user or use generic)
+   - `install`: Installation command
+
+```json
+{
+  "id": "canvas@claude-canvas",
+  "name": "Canvas",
+  "description": "Interactive terminal canvases for calendars, documents, and flight booking",
+  "install": "Run: claude /install-plugin canvas@claude-canvas"
+}
+```
+
+4. Commit and push:
 
 ```bash
 cd "$TEMP_DIR"
@@ -177,13 +269,13 @@ git push origin main
 - Configure git credentials, OR
 - Fork the repo and update the remote URL
 
-### Step 7: Update README.md (MANDATORY)
+### Step 8: Update README.md (MANDATORY)
 
 **This step is ALWAYS performed after any sync operation, regardless of whether items were installed or pushed.**
 
 Generate an updated `README.md` that documents ALL features currently in the repository. The README must be self-contained and provide a complete overview.
 
-#### 7a: Scan Repository Contents
+#### 8a: Scan Repository Contents
 
 Scan the temp repo directory (after any sync changes) to inventory all features:
 
@@ -199,9 +291,12 @@ ls "$TEMP_DIR/.claude/hooks/" 2>/dev/null
 
 # Check for statusline
 ls "$TEMP_DIR/.claude/statusline-command.sh" 2>/dev/null
+
+# Read plugin manifest
+cat "$TEMP_DIR/.claude/plugins.json" 2>/dev/null
 ```
 
-#### 7b: Extract Descriptions
+#### 8b: Extract Descriptions
 
 For each skill, read its `SKILL.md` frontmatter to extract name and description:
 
@@ -222,7 +317,9 @@ For commands (`.md` files), read the first few lines to get the title and purpos
 
 For hooks (`.sh` files), look for a comment header describing purpose.
 
-#### 7c: Generate README.md
+For plugins, use the descriptions from `plugins.json`.
+
+#### 8c: Generate README.md
 
 Write a new `README.md` to the temp repo with this structure:
 
@@ -280,6 +377,18 @@ Event-driven scripts that run automatically.
 
 <For each hook, add a row>
 
+### Plugins
+
+Recommended Claude Code plugins tracked by this configuration.
+
+| Plugin | Description | Install |
+|--------|-------------|---------|
+| Frontend Design | Create distinctive frontend interfaces | `claude /install-plugin frontend-design@claude-plugins-official` |
+| GitHub | GitHub integration for issues and PRs | `claude /install-plugin github@claude-plugins-official` |
+| ... | ... | ... |
+
+<For each plugin in plugins.json, add a row>
+
 ### Status Line
 
 Custom status line configuration showing working directory, git branch, model name, and context window.
@@ -324,6 +433,9 @@ chmod +x ~/.claude/hooks/HOOK.sh
 # Status line
 cp .claude/statusline-command.sh ~/.claude/
 chmod +x ~/.claude/statusline-command.sh
+
+# Plugins (run each command)
+claude /install-plugin PLUGIN_ID
 ```
 
 ## Contributing
@@ -335,7 +447,7 @@ Run `/config-sync` and select "push to remote" to contribute your local configur
 *Last synced: <CURRENT_DATE>*
 ```
 
-#### 7d: Commit README Update
+#### 8d: Commit README Update
 
 If the README changed:
 
@@ -346,7 +458,7 @@ git diff --cached --quiet || git commit -m "Update README with current features"
 git push origin main
 ```
 
-### Step 8: Cleanup
+### Step 9: Cleanup
 
 Remove the temporary directory:
 
@@ -354,7 +466,7 @@ Remove the temporary directory:
 rm -rf "$TEMP_DIR"
 ```
 
-### Step 9: Summary
+### Step 10: Summary
 
 Provide a summary of what was done:
 
@@ -367,8 +479,14 @@ Provide a summary of what was done:
 
 **Pushed to remote:**
 - skills/my-skill
+- plugins.json (added new-plugin@source)
 
-**README updated:** Yes (documented X skills, Y commands, Z hooks)
+**Plugins to install manually:**
+Run these commands to install the selected plugins:
+- claude /install-plugin frontend-design@claude-plugins-official
+- claude /install-plugin stripe@claude-plugins-official
+
+**README updated:** Yes (documented X skills, Y commands, Z hooks, W plugins)
 
 **Note:** Restart Claude Code for new configurations to take effect.
 ```
@@ -380,12 +498,15 @@ Provide a summary of what was done:
 - If push fails: Inform user about authentication requirements
 - Always cleanup temp directory even on errors
 - README update failures should not block the sync operation
+- If plugins.json doesn't exist in remote, create it when pushing plugins
 
 ## Notes
 
-- This skill requires `git` to be installed
+- This skill requires `git` and `jq` to be installed
 - Push functionality requires write access to the remote repository
 - Skills that are git repos themselves (have .git folders) will be copied without their .git directory to avoid nested repos
 - The comparison is based on file/directory names, not content (except for single files like statusline-command.sh where diff is used)
 - README is regenerated from scratch each sync to ensure accuracy
 - The README serves as the canonical documentation for what's in the repository
+- Plugin installation cannot be automated within the skill session; installation commands are provided for the user to run
+- Plugin manifest only tracks metadata; actual plugin installation is done via Claude Code's /install-plugin command

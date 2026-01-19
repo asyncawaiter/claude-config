@@ -1,0 +1,46 @@
+{
+  "plugins": [
+    {
+      "id": "frontend-design@claude-plugins-official",
+      "name": "Frontend Design",
+      "description": "Create distinctive, production-grade frontend interfaces with high design quality. Generates creative, polished code that avoids generic AI aesthetics.",
+      "install": "Run: claude /install-plugin frontend-design@claude-plugins-official"
+    },
+    {
+      "id": "github@claude-plugins-official",
+      "name": "GitHub",
+      "description": "GitHub integration for working with issues, pull requests, and repositories directly from Claude Code.",
+      "install": "Run: claude /install-plugin github@claude-plugins-official"
+    },
+    {
+      "id": "vercel@claude-plugins-official",
+      "name": "Vercel",
+      "description": "Deploy applications to Vercel, view deployment logs, and manage project configuration.",
+      "install": "Run: claude /install-plugin vercel@claude-plugins-official"
+    },
+    {
+      "id": "supabase@claude-plugins-official",
+      "name": "Supabase",
+      "description": "Supabase integration for database operations, authentication, and backend services.",
+      "install": "Run: claude /install-plugin supabase@claude-plugins-official"
+    },
+    {
+      "id": "swift-lsp@claude-plugins-official",
+      "name": "Swift LSP",
+      "description": "Swift language server protocol support for enhanced Swift/iOS development assistance.",
+      "install": "Run: claude /install-plugin swift-lsp@claude-plugins-official"
+    },
+    {
+      "id": "stripe@claude-plugins-official",
+      "name": "Stripe",
+      "description": "Stripe integration for payment processing, explaining error codes, test cards, and best practices.",
+      "install": "Run: claude /install-plugin stripe@claude-plugins-official"
+    },
+    {
+      "id": "canvas@claude-canvas",
+      "name": "Canvas",
+      "description": "Interactive terminal canvases for calendars, documents, and flight booking interfaces.",
+      "install": "Run: claude /install-plugin canvas@claude-canvas"
+    }
+  ]
+}
