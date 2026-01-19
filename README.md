@@ -1,95 +1,126 @@
 # Claude Config
 
-Configuration and customizations for Claude Code CLI, including custom skills and status line setup.
+Personal Claude Code configuration repository. Clone and use `/config-sync` to sync with your local machine.
 
-## Installation
-
-Clone this repo and follow the setup instructions for each component below.
+## Quick Start
 
 ```bash
+# Clone this repo
 git clone https://github.com/asyncawaiter/claude-config.git
+
+# Copy the config-sync skill to enable syncing
+mkdir -p ~/.claude/skills
+cp -r claude-config/.claude/skills/config-sync ~/.claude/skills/
+
+# Run the sync command in Claude Code
+/config-sync
 ```
 
----
+## Features
 
-## Status Line (Fish Shell + Tide)
+### Skills
 
-A custom status line that displays working directory, git branch, model name, context window remaining, and vim mode.
+Skills are reusable prompt templates that extend Claude Code's capabilities. Install to `~/.claude/skills/`.
 
-### Prerequisites
+| Skill | Description |
+|-------|-------------|
+| `config-sync` | Sync Claude Code configuration between local machine and remote GitHub repo. Compares skills, commands, hooks, and statusline, allowing selective sync in both directions. |
+| `continuous-learning` | Continuous learning system that extracts reusable knowledge from work sessions. Triggers on `/continuous-learning`, "save this as a skill", "what did we learn?", or after non-obvious debugging tasks. |
+| `effective-writing-llms` | Write effectively in the age of LLMs, avoiding common machine-generated patterns while leveraging AI as a writing tool. Use for documentation, reports, and analyses. |
+| `humanizer` | Remove signs of AI-generated writing from text. Detects and fixes patterns including inflated symbolism, promotional language, em dash overuse, rule of three, AI vocabulary, and excessive conjunctive phrases. |
 
-- Fish shell
-- [Tide prompt](https://github.com/IlanCosman/tide) (v5+)
-- `jq` (for JSON parsing)
+### Commands
 
-### Setup
+Custom slash commands for Claude Code. Install to `~/.claude/commands/`.
 
-1. **Copy the status line script:**
+| Command | Description |
+|---------|-------------|
+| `shareable-doc` | Generate high-density, professional HTML documents for PDF export. Features a strict 3-color design (black, gray, teal), CSS-based flowcharts, compact layout, and print optimization. |
 
-   ```bash
-   cp .claude/statusline-command.sh ~/.claude/
-   chmod +x ~/.claude/statusline-command.sh
-   ```
+### Hooks
 
-2. **Configure Claude Code to use the status line:**
+Event-driven scripts that run automatically. Install to `~/.claude/hooks/`.
 
-   Add the following to `~/.claude/settings.json`:
+| Hook | Trigger | Description |
+|------|---------|-------------|
+| `continuous-learning-activator.sh` | UserPromptSubmit | Activates continuous learning evaluation after each prompt, ensuring valuable knowledge is captured and preserved. |
 
-   ```json
-   {
-     "statusLine": {
-       "type": "command",
-       "command": "~/.claude/statusline-command.sh"
-     }
-   }
-   ```
+### Status Line
 
-   Or merge with your existing settings if you have other configurations.
+Custom status line showing working directory, git branch, model name, and context window remaining.
 
-3. **Verify jq is installed:**
+**File:** `.claude/statusline-command.sh`
 
-   ```bash
-   # macOS
-   brew install jq
-   ```
-
-### What the Status Line Shows
-
-- **Cyan**: Current working directory (with `~` for home)
-- **Green**: Git branch (if in a repo)
-- **Magenta**: Model name in brackets
-- **Additional**: Context window remaining percentage, vim mode (if enabled)
-
-Example output:
+**Display format:**
 ```
 ~/projects/myapp (main) [Claude Opus 4.5] | ctx: 85%
 ```
 
----
-
-## Custom Skills
-
-Custom skills (slash commands) for Claude Code CLI.
-
-### Installation
-
-Copy the `.claude/commands/` folder to your project root, or symlink it globally:
-
-```bash
-cp -r .claude/commands ~/.claude/
+**Setup:** Add to `~/.claude/settings.json`:
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline-command.sh"
+  }
+}
 ```
 
-### Available Skills
+**Prerequisites:** `jq` must be installed (`brew install jq` on macOS)
 
-#### `/shareable-doc`
+## Installation
 
-Generate high-density, professional HTML documents for PDF export.
+### Full Sync (Recommended)
 
-**Features:**
-- 3-color scheme (black, gray, teal)
-- Compact layout optimized for print
-- CSS-based flowcharts (no Unicode arrows)
-- Print-safe backgrounds
-- No emojis, no metadata headers
+Use the `/config-sync` skill to interactively sync configurations:
 
-**Usage:** Run `/shareable-doc` in Claude Code to generate a report from your current context.
+1. Install the config-sync skill manually (see Quick Start)
+2. Run `/config-sync` in Claude Code
+3. Select which features to install from remote
+4. Optionally push your local configurations to share
+
+### Manual Installation
+
+Copy individual components:
+
+```bash
+# Skills (directories)
+cp -r .claude/skills/SKILL_NAME ~/.claude/skills/
+
+# Commands (markdown files)
+mkdir -p ~/.claude/commands
+cp .claude/commands/COMMAND.md ~/.claude/commands/
+
+# Hooks (shell scripts)
+mkdir -p ~/.claude/hooks
+cp .claude/hooks/HOOK.sh ~/.claude/hooks/
+chmod +x ~/.claude/hooks/HOOK.sh
+
+# Status line
+cp .claude/statusline-command.sh ~/.claude/
+chmod +x ~/.claude/statusline-command.sh
+```
+
+## Contributing
+
+Run `/config-sync` and select "push to remote" to contribute your local configurations back to this repository.
+
+## Structure
+
+```
+.claude/
+├── commands/           # Slash command definitions (.md)
+│   └── shareable-doc.md
+├── hooks/              # Event-triggered scripts (.sh)
+│   └── continuous-learning-activator.sh
+├── skills/             # Skill directories with SKILL.md
+│   ├── config-sync/
+│   ├── continuous-learning/
+│   ├── effective-writing-llms/
+│   └── humanizer/
+└── statusline-command.sh  # Custom status line script
+```
+
+---
+
+*Last synced: 2026-01-19*
