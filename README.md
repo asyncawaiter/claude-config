@@ -27,7 +27,11 @@ Skills are reusable prompt templates that extend Claude Code's capabilities. Ins
 | `config-sync` | Sync Claude Code configuration between local machine and remote GitHub repo. Compares skills, commands, hooks, plugins, and statusline, allowing selective sync in both directions. |
 | `continuous-learning` | Continuous learning system that extracts reusable knowledge from work sessions. Triggers on `/continuous-learning`, "save this as a skill", "what did we learn?", or after non-obvious debugging tasks. |
 | `effective-writing-llms` | Write effectively in the age of LLMs, avoiding common machine-generated patterns while leveraging AI as a writing tool. Use for documentation, reports, and analyses. |
+| `excalidraw` | Generate architecture diagrams as .excalidraw files from codebase analysis. Analyzes any codebase, identifies components and relationships, and produces valid Excalidraw JSON with proper labels, arrows, and color coding. |
 | `humanizer` | Remove signs of AI-generated writing from text. Detects and fixes patterns including inflated symbolism, promotional language, em dash overuse, rule of three, AI vocabulary, and excessive conjunctive phrases. |
+| `init-project` | Scaffold a new project with a CLAUDE.md containing workflow orchestration rules, task management guidelines, and core principles. Use when starting a new project that you intend to build with Claude Code. |
+| `vercel-react-best-practices` | React and Next.js performance optimization guidelines from Vercel Engineering. Use when writing, reviewing, or refactoring React/Next.js code for optimal performance patterns. |
+| `web-design-guidelines` | Review UI code for Web Interface Guidelines compliance. Use when asked to review UI, check accessibility, audit design, review UX, or check against best practices. |
 
 ### Commands
 
@@ -135,11 +139,15 @@ Run `/config-sync` and select "push to remote" to contribute your local configur
 │   ├── config-sync/
 │   ├── continuous-learning/
 │   ├── effective-writing-llms/
-│   └── humanizer/
+│   ├── excalidraw/
+│   ├── humanizer/
+│   ├── init-project/
+│   ├── vercel-react-best-practices/
+│   └── web-design-guidelines/
 ├── plugins.json           # Plugin manifest with descriptions
 └── statusline-command.sh  # Custom status line script
 ```
 
 ---
 
-*Last synced: 2026-01-19*
+*Last synced: 2026-02-07*
